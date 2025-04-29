@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String              @id @default(uuid())
+  name             String
+  username         String              @unique
+  email            String              @unique
+  password         String
+  roles            Role[]
+  createdAt        DateTime            @default(now()) @db.Timestamptz(6)
+  ipAddress        String?
+  profilePicture   String?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  deletedAt        DateTime?
+  isSuspended      Boolean             @default(false)
+  notifications    Notification[]
+  posts            Post[]
+  reports          Report[]            @relation("ReporterUser")
+  reportedInstances Report[]            @relation("ReportedUser")
+  participants     ThreadParticipant[]
+  userLogs         UserLog[]           @relation("User_UserLog")
+}
+
+model Post {
+  id          String        @id @default(uuid())
+  userId      String        @map("user_id")
+  type        PostType
+  title       String        @db.VarChar(255)
+  description String
+  location    String        @db.VarChar(255)
+  dateLost    DateTime?
+  dateFound   DateTime?
+  images      String[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  status      PostStatus    @default(PENDING)
+  category    String?       @db.VarChar(100)
+  deletedAt   DateTime?
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  history     PostHistory[]
+  reports     Report[]
+  threads     Thread[]
+
+  @@index([type])
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Thread {
+  id           String              @id @default(uuid())
+  postId       String
+  createdAt    DateTime            @default(now())
+  messages     Message[]
+  post         Post                @relation(fields: [postId], references: [id], onDelete: Cascade)
+  participants ThreadParticipant[]
+}
+
+model ThreadParticipant {
+  id       String    @id @default(uuid())
+  threadId String
+  userId   String
+  joinedAt DateTime  @default(now())
+  messages Message[]
+  thread   Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+}
+
+model Message {
+  id              String             @id @default(uuid())
+  threadId        String
+  text            String
+  imageUrl        String?
+  createdAt       DateTime           @default(now())
+  isSystemMessage Boolean            @default(false)
+  senderId        String?
+  sender          ThreadParticipant? @relation(fields: [senderId], references: [id])
+  thread          Thread             @relation(fields: [threadId], references: [id], onDelete: Cascade)
+}
+
+model PostHistory {
+  id        String     @id @default(uuid())
+  postId    String
+  action    PostAction
+  changedBy String
+  timestamp DateTime   @default(now()) @db.Timestamptz(6)
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  content   String
+  metadata  Json?
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id             String        @id @default(uuid())
+  type           ReportType
+  reason         ReportReason
+  description    String?
+  status         ReportStatus  @default(PENDING)
+  createdAt      DateTime      @default(now())
+  resolvedAt     DateTime?
+  adminNotes     String?
+  
+  reporterId     String
+  reporter       User          @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reportedPostId String?
+  reportedPost   Post?         @relation(fields: [reportedPostId], references: [id], onDelete: SetNull)
+
+  reportedUserId String?
+  reportedUser   User?         @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  
+  @@index([reporterId])
+  @@index([reportedPostId])
+  @@index([reportedUserId])
+  @@index([status])
+}
+
+model UserLog {
+  id        String   @id @default(uuid())
+  userId    String
+  username  String
+  action    String
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+  ipAddress String
+  user      User     @relation("User_UserLog", fields: [userId], references: [id])
+}
+
+model ArchivePost {
+  id             String   @id @default(uuid())
+  originalPostId String
+  archivedAt     DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  DEVELOPER
+}
+
+enum PostStatus {
+  PENDING
+  MATCHED
+  RESOLVED
+}
+
+enum PostType {
+  LOST
+  FOUND
+}
+
+enum PostAction {
+  CREATED
+  UPDATED
+  MATCHED
+  RESOLVED
+  DELETED
+  RESTORED
+}
+
+enum NotificationType {
+  MATCH
+  RESOLVE
+  NEW_THREAD
+  NEW_MESSAGE
+  REPORT_RECEIVED
+  REPORT_RESOLVED
+}
+
+enum ReportType {
+  POST
+  USER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  ACTION_TAKEN
+  DISMISSED
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE_CONTENT
+  HARASSMENT
+  MISLEADING_INFORMATION
+  SCAM
+  OFF_TOPIC
+  OTHER
+}

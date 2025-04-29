@@ -1,0 +1,10 @@
+<svg viewBox="0 0 250 300" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title desc" role="img">
+  <title id="title">CMU Finds Logo</title>
+  <path d="M125 0L250 60V133.5C250 204.5 196.5 270 125 300C53.5 270 0 204.5 0 133.5V60L125 0Z" fill="#0A3D62"/>
+  <path d="M125 30L225 80V138.5C225 196.5 181.5 250 125 275C68.5 250 25 196.5 25 138.5V80L125 30Z" fill="white"/>
+  <g>
+    <circle cx="110" cy="140" r="55" fill="#F9CA24"/>
+    <circle cx="110" cy="140" r="40" fill="white"/>
+    <rect x="150" y="180" width="20" height="80" rx="5" transform="rotate(-45 150 180)" fill="#0A3D62"/>
+  </g>
+</svg>

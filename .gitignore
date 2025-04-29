@@ -1,0 +1,48 @@
+# Node.js / General
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.env
+.env.*
+!.env.example
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+*.log
+coverage/
+dist/
+
+# Prisma
+# Keep schema.prisma, but ignore generated client if not needed (usually it IS needed, so often commented out)
+# **/node_modules/.prisma/client/
+
+# Next.js
+cmufinds-frontend/.next/
+cmufinds-frontend/out/
+cmufinds-frontend/.swc/
+# Next.js specific .env files are covered by general rules above
+
+# Uploads (User-generated content should not be in Git)
+cmufinds-backend/uploads/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editor folders
+.vscode/
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw? 
